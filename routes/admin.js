@@ -2,10 +2,6 @@ const express = require('express');
 const router = express.Router();
 const {
   verifyAdminToken,
-  getAllUsers,
-  getAllApiKeys,
-  toggleApiKey,
-  deleteUser,
   getAllEmergencies,
   getEmergencyById,
   createEmergency,
@@ -14,12 +10,6 @@ const {
 } = require('../controllers/adminController');
 
 router.use(verifyAdminToken);
-
-router.get('/users', getAllUsers);
-
-router.get('/apikeys', getAllApiKeys);
-
-router.delete('/users/:id', deleteUser);
 
 router.get('/emergency/:id', getEmergencyById);
 

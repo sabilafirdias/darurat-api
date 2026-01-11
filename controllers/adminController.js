@@ -20,72 +20,6 @@ const verifyAdminToken = (req, res, next) => {
   }
 };
 
-const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.findAll({
-      attributes: ['id', 'name', 'email', 'createdAt'],
-      include: [{
-        model: ApiKey,
-        attributes: ['key', 'isActive', 'createdAt']
-      }]
-    });
-    res.json({ status: 'success', data: users });
-  } catch (error) {
-    console.error('Error in getAllUsers:', error);
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const getAllApiKeys = async (req, res) => {
-  try {
-    const keys = await ApiKey.findAll({
-      include: [{
-        model: User,
-        attributes: ['id', 'name', 'email']
-      }]
-    });
-    res.json({ status: 'success', data: keys });
-  } catch (error) {
-    console.error('Error in getAllApiKeys:', error);
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const toggleApiKey = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const key = await ApiKey.findByPk(id);
-    if (!key) {
-      return res.status(404).json({ error: 'API Key not found' });
-    }
-    key.isActive = !key.isActive;
-    await key.save();
-    res.json({
-      status: 'success',
-      message: `API Key ${key.isActive ? 'activated' : 'deactivated'}`,
-      key: key.key,
-      isActive: key.isActive
-    });
-  } catch (error) {
-    console.error('Error in toggleApiKey:', error);
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const deleteUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const user = await User.findByPk(id);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    await user.destroy();
-    res.json({ status: 'success', message: 'User deleted' });
-  } catch (error) {
-    console.error('Error in deleteUser:', error);
-    res.status(500).json({ error: error.message });
-  }
-};
 
 const getAllEmergencies = async (req, res) => {
   try {
@@ -180,10 +114,6 @@ const deleteEmergency = async (req, res) => {
 
 module.exports = {
   verifyAdminToken,
-  getAllUsers,
-  getAllApiKeys,
-  toggleApiKey,
-  deleteUser,
   getEmergencyById,
   getAllEmergencies,
   createEmergency,
