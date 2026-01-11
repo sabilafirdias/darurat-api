@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - DaruratID API</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #FFF9E6;
+      color: #5A4A00;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 1.2rem 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(255, 206, 109, 0.3);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-info span {
+      font-weight: 600;
+    }
+    .logout-btn {
+      background: #FFD76E;
+      color: #5A4A00;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .logout-btn:hover {
+      background: #FFC447;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(255, 206, 109, 0.3);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .card h2 {
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .api-key-display {
+      background: #FFF5D9;
+      padding: 14px;
+      border-radius: 12px;
+      font-family: monospace;
+      word-break: break-all;
+      margin: 12px 0;
+      font-size: 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .api-key-text {
+      flex: 1;
+      text-align: left;
+    }
+    .copy-btn {
+      background: #FFD76E;
+      color: #5A4A00;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover {
+      background: #FFC447;
+    }
+    .btn {
+      background: #FFD76E;
+      color: #5A4A00;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-size: 1rem;
+    }
+    .btn:hover {
+      background: #FFC447;
+    }
+
+    #copyNotification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    #copyNotification.show {
+      opacity: 1;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .emergency-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .emergency-table th,
+    .emergency-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #FFE8B3;
+    }
+    .emergency-table th {
+      background: #FFF5D9;
+      color: #5A4A00;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="user-info">
+        Halo, <span id="userName">User</span>!
+      </div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+        <div class="card">
+      <h2>API Key Anda</h2>
+      <p>Generate API key untuk mengakses Open API DaruratID.</p>
+      
+      <div class="api-key-display" id="apiKeyContainer">
+        <span class="api-key-text" id="apiKey">Belum generate</span>
+        <button class="copy-btn" id="copyBtn" style="display:none;" onclick="copyApiKey()">Copy</button>
+      </div>
+      
+      <button class="btn" onclick="generateApiKey()">Generate API Key</button>
+    </div>
+
+    <div class="card">
+      <h2>Lihat Nomor Darurat</h2>
+      <p>Masukkan API Key Anda untuk melihat data darurat.</p>
+      
+      <div class="form-group" style="margin: 12px 0;">
+        <input
+          type="text"
+          id="manualApiKey"
+          placeholder="Masukkan API key Anda di sini"
+          style="width:100%; padding:10px; border:2px solid #FFD76E; border-radius:12px; font-family:monospace;"
+        />
+      </div>
+      
+      <button class="btn" onclick="fetchEmergenciesByApiKey()">Lihat Nomor Darurat</button>
+    </div>
+
+    <div class="card hidden" id="emergencyTableCard">
+      <h2>Semua Nomor Darurat</h2>
+      <table class="emergency-table" id="emergencyTable">
+        <thead>
+          <tr>
+            <th>Kategori</th>
+            <th>Nama</th>
+            <th>Nomor</th>
+            <th>Cakupan</th>
+            <th>Provinsi</th>
+          </tr>
+        </thead>
+        <tbody id="emergencyTableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="copyNotification">Disalin!</div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const name = localStorage.getItem('name');
+    let apiKeyValue = localStorage.getItem('apiKey');
+    
+    if (!token || !name) {
+      alert('Anda harus login terlebih dahulu!');
+      window.location.href = 'login.html';
+    } else {
+      document.getElementById('userName').textContent = name;
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('name');
+      localStorage.removeItem('apiKey');
+      window.location.href = 'index.html';
+    }
+
+    async function generateApiKey() {
+      try {
+        const res = await fetch('/api/user/generate-api-key', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        const data = await res.json();
+        if (res.ok && data.key) {
+          apiKeyValue = data.key;
+          localStorage.setItem('apiKey', data.key);
+          
+          const apiKeyElement = document.getElementById('apiKey');
+          const copyBtn = document.getElementById('copyBtn');
+          
+          if (apiKeyElement) {
+            apiKeyElement.textContent = data.key;
+            if (copyBtn) copyBtn.style.display = 'inline-block';
+          }
+                  } else {
+          alert((data.error || 'Gagal generate API key'));
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function copyApiKey() {
+      try {
+        await navigator.clipboard.writeText(apiKeyValue);
+        const notif = document.getElementById('copyNotification');
+        notif.classList.add('show');
+        setTimeout(() => notif.classList.remove('show'), 1500);
+      } catch (err) {
+        alert('Gagal menyalin: ' + err.message);
+      }
+    }
+
+      async function fetchEmergenciesByApiKey() {
+      const inputKey = document.getElementById('manualApiKey').value.trim();
+      
+      if (!inputKey) {
+        alert('Masukkan API key terlebih dahulu.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/emergency', {
+          headers: { 'X-API-Key': inputKey }
+        });
+
+        const text = await res.text();
+        let data;
+        
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          data = { error: 'Terjadi kesalahan sistem.' };
+        }
+
+        if (!res.ok) {
+          if (data.error === "Invalid or inactive API Key") {
+            alert("Maaf, API Key yang Anda masukkan salah atau sudah tidak aktif.");
+          } else {
+            alert(data.error || "Gagal memuat data. Silakan coba lagi nanti.");
+          }
+          return;
+        }
+
+        const tbody = document.getElementById('emergencyTableBody');
+        tbody.innerHTML = data.data.map(e => `
+          <tr>
+            <td>${e.category}</td>
+            <td>${e.name}</td>
+            <td>${e.number}</td>
+            <td>${e.scope}</td>
+            <td>${e.province || '-'}</td>
+          </tr>
+        `).join('');
+
+        document.getElementById('emergencyTableCard').classList.remove('hidden');
+      } catch (err) {
+        alert((err.message || 'Gagal memuat data darurat'));
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (apiKeyValue && apiKeyValue !== 'Belum generate') {
+        document.getElementById('apiKey').textContent = apiKeyValue;
+        document.getElementById('copyBtn').style.display = 'inline-block';
+      }
+              document.getElementById('manualApiKey').value = '';
+    });
+  </script>
+</body>
+</html>

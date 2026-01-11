@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - DaruratID API</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #FFF9E6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .container {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(255, 206, 109, 0.3);
+      width: 90%;
+      max-width: 450px;
+    }
+    h2 {
+      color: #5A4A00;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #5A4A00;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #FFD76E;
+      border-radius: 12px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #FFC447;
+    }
+    .btn {
+      background: #FFD76E;
+      color: #5A4A00;
+      border: none;
+      padding: 12px;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1.1rem;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #FFC447;
+    }
+    .back {
+      display: block;
+      text-align: center;
+      margin-top: 1rem;
+      color: #5A4A00;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Login User</h2>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required placeholder="contoh@email.com" />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required minlength="6" placeholder="••••••" />
+      </div>
+      <button type="submit" class="btn">Masuk</button>
+    </form>
+    <a href="register.html" class="back">Belum punya akun? Daftar di sini</a>
+  </div>
+
+  <script>
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+      console.log('Mengirim login request ke /api/auth/login...');
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      console.log('Status response:', res.status);
+      const text = await res.text();
+      console.log('Response body:', text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        throw new Error('Server mengembalikan bukan JSON: ' + text.substring(0, 100));
+      }
+
+      if (res.ok && data.token) {
+        console.log('Login sukses! Menyimpan token dan redirect...');
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('name', data.name || 'User');
+        window.location.replace('dashboard.html');
+      } else {
+        alert((data.error || 'Login gagal'));
+      }
+    } catch (err) {
+      console.error('Error saat login:', err);
+      alert('Error: ' + err.message);
+    }
+  });
+</script>

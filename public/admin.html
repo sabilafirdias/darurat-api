@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - DaruratID API</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #FFF9E6;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .header {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(255, 206, 109, 0.3);
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 {
+      color: #5A4A00;
+      margin: 0;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #5A4A00;
+      font-weight: 600;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #FFD76E;
+      border-radius: 12px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    .btn {
+      background: #FFD76E;
+      color: #5A4A00;
+      border: none;
+      padding: 12px;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #FFC447;
+    }
+    .btn-small {
+      width: auto;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+    .users-list {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(255, 206, 109, 0.3);
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #FFE8B3;
+    }
+    th {
+      color: #5A4A00;
+      font-weight: 600;
+    }
+    .action-btn {
+      background: #FFD76E;
+      color: #5A4A00;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-right: 5px;
+      font-size: 0.9rem;
+    }
+    .action-btn:hover {
+      background: #FFC447;
+    }
+    .delete-btn {
+      background: #ff6b6b !important;
+      color: white !important;
+    }
+    .hidden {
+      display: none;
+    }
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(255, 206, 109, 0.2);
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Admin Panel</h1>
+      <button id="logoutBtn" onclick="logout()" class="btn btn-small" style="display:none;">Logout</button>
+    </div>
+
+    <div class="card" id="loginCard">
+      <h2>Login Admin</h2>
+      <form id="adminLoginForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" value="admin" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" value="admin123" required />
+        </div>
+        <button type="submit" class="btn">Login Admin</button>
+      </form>
+    </div>
+
+    <div class="users-list hidden" id="emergencyList">
+      <h2>Kelola Nomor Darurat</h2>
+      
+      <div class="card" id="emergencyFormCard" style="display:none;">
+        <h3 id="formTitle">Tambah Nomor Darurat</h3>
+        <form id="emergencyForm">
+          <input type="hidden" id="emergencyId" />
+          <div class="form-group">
+            <label>Kategori *</label>
+            <input type="text" id="category" required placeholder="contoh: polisi, ambulans" />
+          </div>
+          <div class="form-group">
+            <label>Nama *</label>
+            <input type="text" id="name" required placeholder="contoh: Polisi Kalimantan Barat" />
+          </div>
+          <div class="form-group">
+            <label>Nomor *</label>
+            <input type="text" id="number" required placeholder="contoh: 110" />
+          </div>
+          <div class="form-group">
+            <label>Cakupan *</label>
+            <select id="scope" required>
+              <option value="national">Nasional</option>
+              <option value="provincial">Provinsi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Provinsi (jika provinsi)</label>
+            <input type="text" id="province" placeholder="contoh: Kalimantan Barat" />
+          </div>
+          <div class="form-group">
+            <label>Deskripsi</label>
+            <textarea id="description" rows="2" placeholder="Deskripsi opsional"></textarea>
+          </div>
+          <button type="submit" class="btn">Simpan</button>
+          <button type="button" class="btn" onclick="cancelEdit()" style="background:#ccc;color:#555;">Batal</button>
+        </form>
+      </div>
+
+      <button class="btn" onclick="showEmergencyForm()" style="width:auto;">+ Tambah Nomor Darurat</button>
+
+      <table id="emergencyTable" style="margin-top:1rem;">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Kategori</th>
+            <th>Nama</th>
+            <th>Nomor</th>
+            <th>Cakupan</th>
+            <th>Provinsi</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="emergencyTableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    if (window.location.protocol === 'file:') {
+      alert('Buka halaman ini melalui http://localhost:3000/admin.html');
+    }
+
+    let adminToken = localStorage.getItem('adminToken');
+
+    function logout() {
+      localStorage.removeItem('adminToken');
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/api/auth/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch (e) { throw new Error('Respon tidak valid'); }
+
+        if (res.ok && data.token) {
+          localStorage.setItem('adminToken', data.token);
+          adminToken = data.token;
+          updateAdminUI();
+        } else {
+          alert((data.error || 'Login gagal'));
+        }
+      } catch (err) {
+        console.error('Error login admin:', err);
+        alert('Error: ' + err.message);
+      }
+    });
+
+    async function loadEmergencies() {
+      if (!adminToken) return;
+      try {
+        const res = await fetch('/api/admin/emergency', {
+          headers: { 'Authorization': 'Bearer ' + adminToken }
+        });
+        const data = await res.json();
+        const emergencies = data.data || [];
+        const tbody = document.getElementById('emergencyTableBody');
+        
+        tbody.innerHTML = emergencies.length ? 
+          emergencies.map(e => `
+            <tr>
+              <td>${e.id}</td>
+              <td>${e.category}</td>
+              <td>${e.name}</td>
+              <td>${e.number}</td>
+              <td>${e.scope}</td>
+              <td>${e.province || '-'}</td>
+              <td>
+                <button class="action-btn" onclick="editEmergency(${e.id})">Edit</button>
+                <button class="action-btn delete-btn" onclick="deleteEmergency(${e.id})">Hapus</button>
+              </td>
+            </tr>
+          `).join('') : '<tr><td colspan="7" style="text-align:center;">Tidak ada data</td></tr>';
+      } catch (err) {
+        console.error('Error load emergencies:', err);
+      }
+    }
+
+    document.getElementById('emergencyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('emergencyId').value;
+      const emergencyData = {
+        category: document.getElementById('category').value,
+        name: document.getElementById('name').value,
+        number: document.getElementById('number').value,
+        scope: document.getElementById('scope').value,
+        province: document.getElementById('province').value || null,
+        description: document.getElementById('description').value || null
+      };
+
+      try {
+        let url = id ? `/api/admin/emergency/${id}` : '/api/admin/emergency';
+        let method = id ? 'PUT' : 'POST';
+        
+        const res = await fetch(url, {
+          method,
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + adminToken 
+          },
+          body: JSON.stringify(emergencyData)
+        });
+
+        if (res.ok) {
+          alert(id ? 'Data diupdate!' : 'Data ditambahkan!');
+          loadEmergencies();
+          cancelEdit();
+        } else {
+          const err = await res.json();
+          alert('' + (err.error || 'Gagal menyimpan'));
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    });
+
+    async function editEmergency(id) {
+      try {
+        const res = await fetch(`/api/admin/emergency/${id}`, {
+          headers: { 'Authorization': 'Bearer ' + adminToken }
+        });
+        const data = await res.json();
+
+        const e = data.emergency; 
+        if (!e) throw new Error('Data tidak ditemukan');
+
+        document.getElementById('emergencyId').value = e.id;
+        document.getElementById('category').value = e.category;
+        document.getElementById('name').value = e.name;
+        document.getElementById('number').value = e.number;
+        document.getElementById('scope').value = e.scope;
+        document.getElementById('province').value = e.province || '';
+        document.getElementById('description').value = e.description || '';
+        document.getElementById('formTitle').textContent = 'Edit Nomor Darurat';
+        document.getElementById('emergencyFormCard').style.display = 'block';
+      } catch (err) {
+        console.error('Error edit emergency:', err);
+        alert('Gagal muat data: ' + err.message);
+      }
+    }
+
+    function deleteEmergency(id) {
+      if (!confirm('Yakin hapus data ini?')) return;
+      fetch(`/api/admin/emergency/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + adminToken }
+      })
+      .then(res => {
+        if (res.ok) {
+          alert('Data dihapus!');
+          loadEmergencies();
+        } else {
+          alert('Gagal hapus data');
+        }
+      })
+      .catch(err => alert('Error: ' + err.message));
+    }
+
+    function showEmergencyForm() {
+      cancelEdit();
+      document.getElementById('emergencyFormCard').style.display = 'block';
+    }
+
+    function cancelEdit() {
+      document.getElementById('emergencyForm').reset();
+      document.getElementById('emergencyId').value = '';
+      document.getElementById('formTitle').textContent = 'Tambah Nomor Darurat';
+      document.getElementById('emergencyFormCard').style.display = 'none';
+    }
+
+document.getElementById('scope').addEventListener('change', function() {
+  const provinceInput = document.getElementById('province');
+  if (this.value === 'national') {
+    provinceInput.disabled = true;
+    provinceInput.value = '';
+  } else {
+    provinceInput.disabled = false;
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const scopeSelect = document.getElementById('scope');
+  const provinceInput = document.getElementById('province');
+  if (scopeSelect && provinceInput) {
+    if (scopeSelect.value === 'national') {
+      provinceInput.disabled = true;
+    }
+  }
+});
+
+    function updateAdminUI() {
+      const logoutBtn = document.getElementById('logoutBtn');
+      const loginCard = document.getElementById('loginCard');
+      const emergencyList = document.getElementById('emergencyList');
+
+      if (adminToken) {
+        logoutBtn.style.display = 'block';
+        loginCard.style.display = 'none';
+        emergencyList.classList.remove('hidden');
+        loadEmergencies();
+      } else {
+        logoutBtn.style.display = 'none';
+        loginCard.style.display = 'block';
+        emergencyList.classList.add('hidden');
+      }
+    }
+
+    updateAdminUI();
+  </script>
+</body>
+</html>

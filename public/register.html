@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register - DaruratID API</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #FFF9E6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .container {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(255, 206, 109, 0.3);
+      width: 90%;
+      max-width: 450px;
+    }
+    h2 {
+      color: #5A4A00;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #5A4A00;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #FFD76E;
+      border-radius: 12px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #FFC447;
+    }
+    .btn {
+      background: #FFD76E;
+      color: #5A4A00;
+      border: none;
+      padding: 12px;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1.1rem;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #FFC447;
+    }
+    .back {
+      display: block;
+      text-align: center;
+      margin-top: 1rem;
+      color: #5A4A00;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Register Akun</h2>
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="name">Nama</label>
+        <input type="text" id="name" required placeholder="Kimberly" />
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required placeholder="kim@example.com" />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required minlength="6" placeholder="Minimal 6 karakter" />
+      </div>
+      <button type="submit" class="btn">Daftar Sekarang</button>
+    </form>
+    <a href="login.html" class="back">Sudah punya akun? Login di sini</a>
+  </div>
+
+  <script>
+    if (window.location.protocol === 'file:') {
+      alert('Buka halaman ini melalui http://localhost:3000/register.html');
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!name || !email || !password) {
+        alert('Semua field wajib diisi');
+        return;
+      }
+      if (password.length < 6) {
+        alert('Password minimal 6 karakter');
+        return;
+      }
+
+      try {
+        console.log('Mengirim data registrasi ke server...');
+
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name, email, password })
+        });
+
+        const text = await res.text();
+        console.log('Response dari server:', text);
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (parseErr) {
+          throw new Error('Server mengembalikan respon tidak valid (bukan JSON)');
+        }
+
+        if (res.ok) {
+          alert('Registrasi berhasil!\nSilakan login dengan akun Anda.');
+          window.location.href = 'login.html';
+        } else {
+          alert('Registrasi gagal:\n' + (data.error || 'Coba lagi nanti'));
+        }
+      } catch (err) {
+        console.error('Error saat registrasi:', err);
+        alert('Gagal terhubung ke server:\n' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
